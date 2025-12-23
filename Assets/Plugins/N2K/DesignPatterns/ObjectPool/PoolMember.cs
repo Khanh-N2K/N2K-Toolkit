@@ -7,17 +7,30 @@ namespace N2K
     {
         [Header("=== POOL MEMBER ===")]
 
+
+        #region ___ SETTINGS ___
         [Header("Settings")]
+
         [SerializeField]
         private int defaultCapacity;
+
         [SerializeField]
         private int maxSize;
-        public int DefaultCapacity => defaultCapacity;
-        public int MaxSize => maxSize;
 
+        public int DefaultCapacity => defaultCapacity;
+
+        public int MaxSize => maxSize;
+        #endregion ___
+
+
+        #region ___ DATA ___
         [Header("Data")]
+
         private ObjectPool<PoolMember> pool;
+
         public ObjectPool<PoolMember> Pool => pool;
+        #endregion ___ DATA ___
+
 
         public virtual void SetPool(ObjectPool<PoolMember> pool)
         {

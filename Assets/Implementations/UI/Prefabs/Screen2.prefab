@@ -252,7 +252,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultCapacity: 1
   maxSize: 1
-  <Type>k__BackingField: 1
+  _type: 1
+  _destroyAfterHide: 0
   _goToScreen1Btn: {fileID: 3553936974540349854}
   _openPopup1Btn: {fileID: 984041481613581382}
 --- !u!1 &4989317258847748670

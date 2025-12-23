@@ -489,9 +489,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d193107e2b0d0418ad7cec94586543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCapacity: 1
-  maxSize: 1
-  <Type>k__BackingField: 0
+  _type: 0
+  _destroyAfterHide: 1
   closeBtn: {fileID: 1000484785242659716}
   openPopup2Btn: {fileID: 2673564386434898027}
 --- !u!1 &5806939445156787516

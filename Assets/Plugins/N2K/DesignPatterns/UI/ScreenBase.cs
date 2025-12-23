@@ -3,24 +3,34 @@ using UnityEngine;
 
 namespace N2K
 {
-    public class ScreenBase : PoolMember
+    public class ScreenBase : MonoBehaviour
     {
-        [field: Header("=== SCREEN BASE ===")]
+        [Header("=== SCREEN BASE ===")]
 
-        [field: Header("References")]
 
-        [field: SerializeField]
-        public ScreenType Type { get; private set; }
+        #region ___ SETTINGS ___
+        [Header("Settings")]
 
-        [field: Header("Data")]
+        [SerializeField]
+        private ScreenType _type;
 
+        [SerializeField]
+        private bool _destroyAfterHide = false;
+
+        public ScreenType Type => _type;
+
+        public bool DestroyAfterHide => _destroyAfterHide;
+        #endregion ___
+
+
+        #region ___ DATA ___
         private bool _isInitialized = false;
 
-        [field: Header("Events")]
+        private Action _onShowed;
 
-        protected Action _onShowed;
+        private Action _onHidden;
+        #endregion ___
 
-        protected Action _onHidden;
 
         protected virtual void Initialize()
         {
@@ -33,7 +43,7 @@ namespace N2K
             _onHidden = onHidden;
         }
 
-        public virtual void Show()
+        public virtual void OnShow()
         {
             if (!_isInitialized)
             {
@@ -43,10 +53,13 @@ namespace N2K
             gameObject.SetActive(true);
             _onShowed?.Invoke();
         }
-        public virtual void Hide()
+
+        public virtual void OnHide()
         {
             gameObject.SetActive(false);
             _onHidden?.Invoke();
+            _onShowed = null;
+            _onHidden = null;
         }
     }
 }

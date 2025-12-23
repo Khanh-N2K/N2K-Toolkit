@@ -3,24 +3,34 @@ using UnityEngine;
 
 namespace N2K
 {
-    public class PopupBase : PoolMember
+    public class PopupBase : MonoBehaviour
     {
-        [field: Header("=== POPUP BASE ===")]
+        [Header("=== POPUP BASE ===")]
 
-        [field: Header("References")]
 
-        [field: SerializeField]
-        public PopupType Type { get; private set; }
+        #region ___ SETTINGS ___
+        [Header("Settings")]
 
-        [field: Header("Data")]
+        [SerializeField]
+        private PopupType _type;
 
+        [SerializeField]
+        private bool _destroyAfterHide = false;
+
+        public PopupType Type => _type;
+
+        public bool DestroyAfterHide => _destroyAfterHide;
+        #endregion ___
+
+
+        #region ___ DATA ___
         private bool _isInitialized = false;
 
-        [field: Header("Events")]
+        private Action _onShowed;
         
-        protected Action _onShowed;
-        
-        protected Action _onHidden;
+        private Action _onHidden;
+        #endregion ___
+
 
         protected virtual void Initialize()
         {
@@ -33,8 +43,12 @@ namespace N2K
             _onHidden = onHidden;
         }
 
-        #region ================================ ACTUAL SHOW/ HIDE ===================================
-        public virtual void Show()
+        public void Hide()
+        {
+            UIManager.Instance.HidePopup(this);
+        }
+
+        public virtual void OnShow()
         {
             if (!_isInitialized)
             {
@@ -44,22 +58,11 @@ namespace N2K
             gameObject.SetActive(true);
             _onShowed?.Invoke();
         }
-        public virtual void Hide()
+
+        public virtual void OnHide()
         {
             gameObject.SetActive(false);
             _onHidden?.Invoke();
         }
-        #endregion ------------------------------------------------------------------------------------
-
-        #region ======================== TEMPORARLY SHOW/ HIDE UNDER TOP POPUP ========================
-        public virtual void TempShowUnderTopPopup()
-        {
-            gameObject.SetActive(true);
-        }
-        public virtual void TempHideUnderTopPopup()
-        {
-            gameObject.SetActive(false);
-        }
-        #endregion ----------------------------------------------------------------------------------------
     }
 }

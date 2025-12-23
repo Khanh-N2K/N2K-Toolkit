@@ -282,7 +282,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1093082112}
   - component: {fileID: 1093082111}
-  - component: {fileID: 1093082113}
   m_Layer: 0
   m_Name: ObjectPool
   m_TagString: Untagged
@@ -317,20 +316,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1093082113
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093082110}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f43909bfe723154e8d38d3d5f5b51cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _showLogs: 1
-  _objName: 
 --- !u!1 &1412370636
 GameObject:
   m_ObjectHideFlags: 0
@@ -531,7 +516,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 143f4f59c8631f34faf460713dd0f641, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _objectPoolAtlas: {fileID: 1093082111}
   _uiManager: {fileID: 1886539210}
 --- !u!4 &1792474840
 Transform:

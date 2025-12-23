@@ -170,7 +170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultCapacity: 1
   maxSize: 1
-  <Type>k__BackingField: 1
+  _type: 1
   closeBtn: {fileID: 1412971874067509133}
 --- !u!1 &5129745515784915261
 GameObject:

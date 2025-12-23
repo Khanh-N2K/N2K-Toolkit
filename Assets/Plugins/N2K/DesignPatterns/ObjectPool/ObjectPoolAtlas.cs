@@ -10,7 +10,7 @@ namespace N2K
 
         private readonly Dictionary<ObjectPool<PoolMember>, Transform> _poolHolderMapping = new();
 
-        public PoolMember Get(PoolMember prefab, Transform holder = null)
+        public T Get<T>(T prefab, Transform holder = null) where T : PoolMember
         {
             _poolMapping.TryGetValue(prefab, out ObjectPool<PoolMember> pool);
             if (pool == null)
@@ -18,7 +18,7 @@ namespace N2K
                 pool = CreatePool(prefab, holder);
                 _poolMapping[prefab] = pool;
             }
-            return pool.Get();
+            return pool.Get() as T;
         }
 
         private ObjectPool<PoolMember> CreatePool(PoolMember prefab, Transform holder)

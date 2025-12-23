@@ -2,178 +2,181 @@
 using UnityEditor;
 using UnityEngine;
 
-public static class PrefabSaver
+namespace N2K
 {
-    public static void SaveWithInstancedMaterials(GameObject go, string baseFolder)
+    public static class PrefabSaver
     {
-        string objectFolder = $"{baseFolder}/{go.name}";
-        string materialsFolder = $"{objectFolder}/_Materials";
-        string meshesFolder = $"{objectFolder}/_Meshes";
-
-        // === Ensure Folder Structure ===
-        if (!AssetDatabase.IsValidFolder(objectFolder))
-            AssetDatabase.CreateFolder(baseFolder, go.name);
-
-        if (!AssetDatabase.IsValidFolder(materialsFolder))
-            AssetDatabase.CreateFolder(objectFolder, "_Materials");
-
-        if (!AssetDatabase.IsValidFolder(meshesFolder))
-            AssetDatabase.CreateFolder(objectFolder, "_Meshes");
-
-        // === Clone so we don't touch scene object ===
-        GameObject copy = Object.Instantiate(go);
-        copy.name = go.name;
-
-        SaveInstancedMeshes(copy, meshesFolder);
-        SaveInstancedMaterials(copy, materialsFolder);
-
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        // === Save prefab ===
-        string prefabPath = $"{objectFolder}/{go.name}.prefab";
-
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null)
-            AssetDatabase.DeleteAsset(prefabPath);
-
-        PrefabUtility.SaveAsPrefabAsset(copy, prefabPath);
-        Object.DestroyImmediate(copy);
-
-        Debug.Log($"[PrefabSaver] Saved prefab + materials + meshes → {objectFolder}");
-    }
-
-    // ================== MESH HANDLING ==================
-    static void SaveInstancedMeshes(GameObject root, string meshesFolder)
-    {
-        int meshIndex = 0;
-
-        // MeshFilter (static meshes)
-        foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
+        public static void SaveWithInstancedMaterials(GameObject go, string baseFolder)
         {
-            Mesh mesh = mf.sharedMesh;
-            if (mesh == null) continue;
+            string objectFolder = $"{baseFolder}/{go.name}";
+            string materialsFolder = $"{objectFolder}/_Materials";
+            string meshesFolder = $"{objectFolder}/_Meshes";
 
-            bool isInstanced = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mesh));
+            // === Ensure Folder Structure ===
+            if (!AssetDatabase.IsValidFolder(objectFolder))
+                AssetDatabase.CreateFolder(baseFolder, go.name);
 
-            if (!isInstanced) continue;
+            if (!AssetDatabase.IsValidFolder(materialsFolder))
+                AssetDatabase.CreateFolder(objectFolder, "_Materials");
 
-            string safeName = mf.name.Replace("/", "_");
-            string meshPath = $"{meshesFolder}/{safeName}_Mesh{meshIndex}.asset";
-            meshIndex++;
+            if (!AssetDatabase.IsValidFolder(meshesFolder))
+                AssetDatabase.CreateFolder(objectFolder, "_Meshes");
 
-            if (AssetDatabase.LoadAssetAtPath<Mesh>(meshPath) != null)
-                AssetDatabase.DeleteAsset(meshPath);
+            // === Clone so we don't touch scene object ===
+            GameObject copy = Object.Instantiate(go);
+            copy.name = go.name;
 
-            Mesh newMesh = Object.Instantiate(mesh);
-            newMesh.name = mesh.name;
+            SaveInstancedMeshes(copy, meshesFolder);
+            SaveInstancedMaterials(copy, materialsFolder);
 
-            AssetDatabase.CreateAsset(newMesh, meshPath);
-            mf.sharedMesh = newMesh;
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            Debug.Log($"Saved Mesh → {meshPath}");
+            // === Save prefab ===
+            string prefabPath = $"{objectFolder}/{go.name}.prefab";
+
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null)
+                AssetDatabase.DeleteAsset(prefabPath);
+
+            PrefabUtility.SaveAsPrefabAsset(copy, prefabPath);
+            Object.DestroyImmediate(copy);
+
+            Debug.Log($"[PrefabSaver] Saved prefab + materials + meshes → {objectFolder}");
         }
 
-        // SkinnedMeshRenderer (skinned meshes)
-        foreach (var smr in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        // ================== MESH HANDLING ==================
+        static void SaveInstancedMeshes(GameObject root, string meshesFolder)
         {
-            Mesh mesh = smr.sharedMesh;
-            if (mesh == null) continue;
+            int meshIndex = 0;
 
-            bool isInstanced = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mesh));
-
-            if (!isInstanced) continue;
-
-            string safeName = smr.name.Replace("/", "_");
-            string meshPath = $"{meshesFolder}/{safeName}_SkinnedMesh{meshIndex}.asset";
-            meshIndex++;
-
-            if (AssetDatabase.LoadAssetAtPath<Mesh>(meshPath) != null)
-                AssetDatabase.DeleteAsset(meshPath);
-
-            Mesh newMesh = Object.Instantiate(mesh);
-            newMesh.name = mesh.name;
-
-            AssetDatabase.CreateAsset(newMesh, meshPath);
-            smr.sharedMesh = newMesh;
-
-            Debug.Log($"Saved SkinnedMesh → {meshPath}");
-        }
-    }
-
-    // ================== MATERIAL HANDLING ==================
-    static void SaveInstancedMaterials(GameObject root, string materialsFolder)
-    {
-        var renderers = root.GetComponentsInChildren<Renderer>(true);
-        int globalMatIndex = 0;
-
-        foreach (var r in renderers)
-        {
-            var mats = r.sharedMaterials;
-
-            for (int i = 0; i < mats.Length; i++)
+            // MeshFilter (static meshes)
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
             {
-                var mat = mats[i];
-                if (mat == null) continue;
+                Mesh mesh = mf.sharedMesh;
+                if (mesh == null) continue;
 
-                bool isInstanced =
-                    string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mat)) ||
-                    AssetDatabase.IsSubAsset(mat);
+                bool isInstanced = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mesh));
 
                 if (!isInstanced) continue;
 
-                string safeName = r.name.Replace("/", "_");
-                string matPath = $"{materialsFolder}/{safeName}_Slot{i}_Mat{globalMatIndex}.mat";
-                globalMatIndex++;
+                string safeName = mf.name.Replace("/", "_");
+                string meshPath = $"{meshesFolder}/{safeName}_Mesh{meshIndex}.asset";
+                meshIndex++;
 
-                if (AssetDatabase.LoadAssetAtPath<Material>(matPath) != null)
-                    AssetDatabase.DeleteAsset(matPath);
+                if (AssetDatabase.LoadAssetAtPath<Mesh>(meshPath) != null)
+                    AssetDatabase.DeleteAsset(meshPath);
 
-                Material newMat = Object.Instantiate(mat);
+                Mesh newMesh = Object.Instantiate(mesh);
+                newMesh.name = mesh.name;
 
-                // Ensure real shader asset
-                string shaderPath = AssetDatabase.GetAssetPath(mat.shader);
-                Shader realShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
-                newMat.shader = realShader != null ? realShader : Shader.Find(mat.shader.name);
+                AssetDatabase.CreateAsset(newMesh, meshPath);
+                mf.sharedMesh = newMesh;
 
-                AssetDatabase.CreateAsset(newMat, matPath);
-                mats[i] = newMat;
-
-                Debug.Log($"Saved Material → {matPath}");
+                Debug.Log($"Saved Mesh → {meshPath}");
             }
 
-            r.sharedMaterials = mats;
-        }
-    }
-
-    // ================== MENU ==================
-    [MenuItem("Tools/N2K/Save Selected As Prefab")]
-    static void SaveSelected()
-    {
-        if (Selection.activeGameObject == null)
-        {
-            Debug.LogWarning("No GameObject selected!");
-            return;
-        }
-        string baseFolder = "Assets/Prefabs/PrefabsSavedByTool";
-        EnsureFolderExists(baseFolder);
-        SaveWithInstancedMaterials(Selection.activeGameObject, baseFolder);
-
-        static void EnsureFolderExists(string fullPath)
-        {
-            if (AssetDatabase.IsValidFolder(fullPath))
-                return;
-
-            string[] parts = fullPath.Split('/');
-            string current = parts[0]; // "Assets"
-
-            for (int i = 1; i < parts.Length; i++)
+            // SkinnedMeshRenderer (skinned meshes)
+            foreach (var smr in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
-                string next = $"{current}/{parts[i]}";
-                if (!AssetDatabase.IsValidFolder(next))
+                Mesh mesh = smr.sharedMesh;
+                if (mesh == null) continue;
+
+                bool isInstanced = string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mesh));
+
+                if (!isInstanced) continue;
+
+                string safeName = smr.name.Replace("/", "_");
+                string meshPath = $"{meshesFolder}/{safeName}_SkinnedMesh{meshIndex}.asset";
+                meshIndex++;
+
+                if (AssetDatabase.LoadAssetAtPath<Mesh>(meshPath) != null)
+                    AssetDatabase.DeleteAsset(meshPath);
+
+                Mesh newMesh = Object.Instantiate(mesh);
+                newMesh.name = mesh.name;
+
+                AssetDatabase.CreateAsset(newMesh, meshPath);
+                smr.sharedMesh = newMesh;
+
+                Debug.Log($"Saved SkinnedMesh → {meshPath}");
+            }
+        }
+
+        // ================== MATERIAL HANDLING ==================
+        static void SaveInstancedMaterials(GameObject root, string materialsFolder)
+        {
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            int globalMatIndex = 0;
+
+            foreach (var r in renderers)
+            {
+                var mats = r.sharedMaterials;
+
+                for (int i = 0; i < mats.Length; i++)
                 {
-                    AssetDatabase.CreateFolder(current, parts[i]);
+                    var mat = mats[i];
+                    if (mat == null) continue;
+
+                    bool isInstanced =
+                        string.IsNullOrEmpty(AssetDatabase.GetAssetPath(mat)) ||
+                        AssetDatabase.IsSubAsset(mat);
+
+                    if (!isInstanced) continue;
+
+                    string safeName = r.name.Replace("/", "_");
+                    string matPath = $"{materialsFolder}/{safeName}_Slot{i}_Mat{globalMatIndex}.mat";
+                    globalMatIndex++;
+
+                    if (AssetDatabase.LoadAssetAtPath<Material>(matPath) != null)
+                        AssetDatabase.DeleteAsset(matPath);
+
+                    Material newMat = Object.Instantiate(mat);
+
+                    // Ensure real shader asset
+                    string shaderPath = AssetDatabase.GetAssetPath(mat.shader);
+                    Shader realShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+                    newMat.shader = realShader != null ? realShader : Shader.Find(mat.shader.name);
+
+                    AssetDatabase.CreateAsset(newMat, matPath);
+                    mats[i] = newMat;
+
+                    Debug.Log($"Saved Material → {matPath}");
                 }
-                current = next;
+
+                r.sharedMaterials = mats;
+            }
+        }
+
+        // ================== MENU ==================
+        [MenuItem("Tools/N2K/Save Selected As Prefab")]
+        static void SaveSelected()
+        {
+            if (Selection.activeGameObject == null)
+            {
+                Debug.LogWarning("No GameObject selected!");
+                return;
+            }
+            string baseFolder = "Assets/Prefabs/PrefabsSavedByTool";
+            EnsureFolderExists(baseFolder);
+            SaveWithInstancedMaterials(Selection.activeGameObject, baseFolder);
+
+            static void EnsureFolderExists(string fullPath)
+            {
+                if (AssetDatabase.IsValidFolder(fullPath))
+                    return;
+
+                string[] parts = fullPath.Split('/');
+                string current = parts[0]; // "Assets"
+
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    string next = $"{current}/{parts[i]}";
+                    if (!AssetDatabase.IsValidFolder(next))
+                    {
+                        AssetDatabase.CreateFolder(current, parts[i]);
+                    }
+                    current = next;
+                }
             }
         }
     }

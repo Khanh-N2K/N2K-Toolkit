@@ -4,12 +4,9 @@ namespace N2K
 {
     public abstract class Singleton<T> : MonoBehaviour where T : Singleton<T>
     {
-        [Header("=== SINGLETON ===")]
-
-        [Header("Data")]
         public static T Instance { get; private set; }
 
-        public virtual void Initialize()
+        protected virtual void Awake()
         {
             if (Instance != null)
             {
