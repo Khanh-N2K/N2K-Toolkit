@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace N2K
 {
-    public static class PrefabSaver
+    public static class GameObjPrefabSaver
     {
         public static void SaveWithInstancedMaterials(GameObject go, string baseFolder)
         {
@@ -41,7 +41,7 @@ namespace N2K
             PrefabUtility.SaveAsPrefabAsset(copy, prefabPath);
             Object.DestroyImmediate(copy);
 
-            Debug.Log($"[PrefabSaver] Saved prefab + materials + meshes → {objectFolder}");
+            Debug.Log($"[GameObjPrefabSaver] Saved prefab + materials + meshes → {objectFolder}");
         }
 
         // ================== MESH HANDLING ==================
@@ -148,7 +148,7 @@ namespace N2K
         }
 
         // ================== MENU ==================
-        [MenuItem("Tools/N2K/Save Selected As Prefab")]
+        [MenuItem("Tools/N2K/Save Selected GameObject As Prefab")]
         static void SaveSelected()
         {
             if (Selection.activeGameObject == null)
@@ -156,7 +156,7 @@ namespace N2K
                 Debug.LogWarning("No GameObject selected!");
                 return;
             }
-            string baseFolder = "Assets/Prefabs/PrefabsSavedByTool";
+            string baseFolder = "Assets/Prefabs/Prefabs Saved By GameObjPrefabSaver";
             EnsureFolderExists(baseFolder);
             SaveWithInstancedMaterials(Selection.activeGameObject, baseFolder);
 
@@ -178,6 +178,19 @@ namespace N2K
                     current = next;
                 }
             }
+        }
+
+        [MenuItem("Tools/N2K/Save Selected GameObject As Prefab", true)]
+        static bool ValidateSaveSelected()
+        {
+            if (Selection.activeGameObject == null)
+                return false;
+
+            // Must be a scene object, not an asset
+            if (EditorUtility.IsPersistent(Selection.activeGameObject))
+                return false;
+
+            return true;
         }
     }
 }
