@@ -6,9 +6,22 @@ namespace N2K
 {
     public class ObjectPoolAtlas : Singleton<ObjectPoolAtlas>
     {
+        #region ___ SETTINGS ___
+        protected override bool IsDontDestroyOnLoad => true;
+        #endregion ___
+
+
+        #region ___ DATA ___
         private readonly Dictionary<PoolMember, ObjectPool<PoolMember>> _poolMapping = new();
 
         private readonly Dictionary<ObjectPool<PoolMember>, Transform> _poolHolderMapping = new();
+        #endregion ___
+
+
+        protected override void OnSingletonAwake()
+        {
+            
+        }
 
         public T Get<T>(T prefab, Transform holder = null) where T : PoolMember
         {

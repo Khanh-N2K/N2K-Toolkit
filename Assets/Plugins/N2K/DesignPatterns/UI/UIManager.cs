@@ -28,10 +28,15 @@ namespace N2K
         #endregion ___
 
 
-        #region ___ DATA ___
-        private Dictionary<ScreenType, ScreenBase> _screenPrefabDict = new();
+        #region ___ SETTINGS ___
+        protected override bool IsDontDestroyOnLoad => true;
+        #endregion ___
 
-        private Dictionary<PopupType, PopupBase> _popupPrefabDict = new();
+
+        #region ___ DATA ___
+        private Dictionary<Type, ScreenBase> _screenPrefabDict = new();
+
+        private Dictionary<Type, PopupBase> _popupPrefabDict = new();
 
         private ScreenBase _currentScreen;
 
@@ -41,175 +46,179 @@ namespace N2K
 
         private List<PopupBase> _inactivePopups = new List<PopupBase>();
 
-        public T GetCurrentScreen<T>() where T : ScreenBase => _currentScreen as T;
+        // ACTION
+
+        public Action<ScreenBase> onScreenShown;
+
+        public Action<ScreenBase> onScreenHidden;
+
+        public Action<PopupBase> onPopupShown;
+
+        public Action<PopupBase> onPopupHidden;
         #endregion ___
 
 
-        protected override void Awake()
+        protected override void OnSingletonAwake()
         {
-            base.Awake();
-            _screenPrefabDict = new Dictionary<ScreenType, ScreenBase>(_screenPrefabs.Count);
-            _popupPrefabDict = new Dictionary<PopupType, PopupBase>(_popupPrefabs.Count);
+            _screenPrefabDict = new Dictionary<Type, ScreenBase>(_screenPrefabs.Count);
+            _popupPrefabDict = new Dictionary<Type, PopupBase>(_popupPrefabs.Count);
             foreach (ScreenBase screen in _screenPrefabs)
             {
-                _screenPrefabDict.Add(screen.Type, screen);
+                if (_screenPrefabDict.ContainsKey(screen.GetType()))
+                {
+                    Debug.LogError($"There's more than 1 instance {screen.GetType().Name}");
+                }
+                else
+                {
+                    _screenPrefabDict.Add(screen.GetType(), screen);
+                }
             }
             foreach (PopupBase popup in _popupPrefabs)
             {
-                _popupPrefabDict.Add(popup.Type, popup);
+                if (_popupPrefabDict.ContainsKey(popup.GetType()))
+                {
+                    Debug.LogError($"There's more than 1 instance of {popup.GetType().Name}");
+                }
+                else
+                {
+                    _popupPrefabDict.Add(popup.GetType(), popup);
+                }
             }
         }
-
-
-        #region ___ QUERY METHODS ___
-        public int GetActivePopupCountOfType(PopupType type)
-        {
-            int count = 0;
-            foreach (var popup in _activePopups)
-            {
-                if (popup.Type == type)
-                    count++;
-            }
-            return count;
-        }
-
-        public List<PopupBase> GetAllPopupsOfType(PopupType type)
-        {
-            List<PopupBase> result = new List<PopupBase>();
-            foreach (var popup in _activePopups)
-            {
-                if (popup.Type == type)
-                    result.Add(popup);
-            }
-            return result;
-        }
-        #endregion ___
 
 
         #region ___ SCREEN ___
-        public ScreenBase ShowScreen(ScreenType type, Action onShowed = null, Action onHidden = null)
+        public T ShowScreen<T>(Action onShowed = null, Action onHidden = null) where T : ScreenBase
         {
-            if (!_screenPrefabDict.ContainsKey(type))
+            if (!_screenPrefabDict.TryGetValue(typeof(T), out var prefab))
             {
-                Debug.LogError($"Screen type {type} not found in dictionary!");
+                Debug.LogError($"{typeof(T).Name} not found in dictionary!");
                 return null;
             }
             HideCurrentScreen();
-            return ShowNewScreen();
 
-            ScreenBase ShowNewScreen()
+            // Get new screen from unused screen or newly instantiated
+            ScreenBase newScreen = null;
+            // Try reuse
+            for(int i = _inactiveScreens.Count - 1; i >= 0; i--)
             {
-                ScreenBase newScreen = GetAvailableScreen(type);
-                newScreen.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                newScreen.SetCallbacks(onShowed, onHidden);
-                newScreen.OnShow();
-                _currentScreen = newScreen;
-                return _currentScreen;
-            }
-
-            ScreenBase GetAvailableScreen(ScreenType type)
-            {
-                ScreenBase[] inactiveScreens = _inactiveScreens.ToArray();
-                foreach (var screen in inactiveScreens)
+                if (_inactiveScreens[i].GetType() == typeof(T))
                 {
-                    if (screen.Type == type)
-                    {
-                        _inactiveScreens.Remove(screen);
-                        screen.gameObject.SetActive(true);
-                        return screen;
-                    }
+                    newScreen = _inactiveScreens[i];
+                    _inactiveScreens.RemoveAt(i);
+                    newScreen.gameObject.SetActive(true);
+                    break;
                 }
-                return Instantiate(_screenPrefabDict[type], _screenHolder);
             }
+            // Intantiated if needed
+            if (newScreen == null)
+            {
+                newScreen = Instantiate(prefab, _screenHolder);
+            }
+
+            // Show new screen
+            newScreen.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            newScreen.SetCallbacks(onShowed, onHidden);
+            newScreen.OnShow();
+            _currentScreen = newScreen;
+            onScreenShown?.Invoke(newScreen);
+            return _currentScreen as T;
         }
 
         public void HideCurrentScreen()
         {
-            if (_currentScreen != null)
+            if (_currentScreen == null)
             {
-                _currentScreen?.OnHide();
-                if (_currentScreen.DestroyAfterHide)
+                return;
+            }
+            ScreenBase cachedScreen = _currentScreen;
+            _currentScreen = null;
+            cachedScreen.OnHide(() =>
+            {
+                onScreenHidden?.Invoke(cachedScreen);
+                if (cachedScreen.DestroyAfterHide)
                 {
-                    Destroy(_currentScreen.gameObject);
+                    Destroy(cachedScreen.gameObject);
                 }
                 else
                 {
-                    _inactiveScreens.Add(_currentScreen);
+                    _inactiveScreens.Add(cachedScreen);
                 }
-                _currentScreen = null;
+            });
+        }
+
+        public bool IsScreenOpen<T>() where T : ScreenBase
+        {
+            return _currentScreen != null && _currentScreen.GetType() == typeof(T);
+        }
+
+        public bool TryGetCurrentScreen<T>(out T screen) where T : ScreenBase
+        {
+            if (_currentScreen != null && _currentScreen.GetType() == typeof(T))
+            {
+                screen = (T)_currentScreen;
+                return true;
             }
+            screen = null;
+            return false;
         }
         #endregion ___
 
 
         #region ___ POPUP ___
-        public PopupBase ShowPopup(PopupType type, Action onShowed = null, Action onHidden = null)
+        public T ShowPopup<T>(Action onShowed = null, Action onHidden = null) where T : PopupBase
         {
-            if (!_popupPrefabDict.ContainsKey(type))
+            if (!_popupPrefabDict.TryGetValue(typeof(T), out var prefab))
             {
-                Debug.LogError($"Popup type {type} not found in dictionary!");
+                Debug.LogError($"{typeof(T).Name} not found in dictionary!");
                 return null;
             }
-            PopupBase newPopup = GetAvailablePopup(type);
+
+            // Get new popup from unused popup or newly created
+            PopupBase newPopup = null;
+            // Try reuse
+            for(int i = _inactivePopups.Count - 1; i >= 0; i--)
+            {
+                if (_inactivePopups[i].GetType() == typeof(T))
+                {
+                    newPopup = _inactivePopups[i];
+                    _inactivePopups.RemoveAt(i);
+                    newPopup.gameObject.SetActive(true);
+                    break;
+                }
+            }
+            // Instantiated if needed
+            if (newPopup == null)
+            {
+                newPopup = Instantiate(prefab, _popupHolder);
+            }
+
+            // Show new popup
             newPopup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             newPopup.SetCallbacks(onShowed, onHidden);
             newPopup.transform.SetAsLastSibling();
             newPopup.OnShow();
             _activePopups.Add(newPopup);
-            return newPopup;
-
-            PopupBase GetAvailablePopup(PopupType type)
-            {
-                PopupBase[] inactivePopups = _inactivePopups.ToArray();
-                foreach (var popup in inactivePopups)
-                {
-                    if (popup.Type == type)
-                    {
-                        _inactivePopups.Remove(popup);
-                        popup.gameObject.SetActive(true);
-                        return popup;
-                    }
-                }
-                return Instantiate(_popupPrefabDict[type], _popupHolder);
-            }
+            onPopupShown?.Invoke(newPopup);
+            return newPopup as T;
         }
 
         public void HideTopPopup()
         {
-            if (_activePopups.Count > 0)
+            if (_activePopups.Count == 0)
             {
-                int lastIndex = _activePopups.Count - 1;
-                PopupBase topPopup = _activePopups[lastIndex];
-                _activePopups.RemoveAt(lastIndex);
-
-                HidePopupInternal(topPopup);
+                return;
             }
+            int lastIndex = _activePopups.Count - 1;
+            PopupBase topPopup = _activePopups[lastIndex];
+            HidePopupInternal(topPopup);
         }
 
         public void HidePopup(PopupBase targetPopup)
         {
             if (targetPopup == null || !_activePopups.Contains(targetPopup))
                 return;
-
-            _activePopups.Remove(targetPopup);
             HidePopupInternal(targetPopup);
-        }
-
-        private void HidePopupInternal(PopupBase popup)
-        {
-            if (popup == null)
-                return;
-
-            popup.OnHide();
-
-            if (popup.DestroyAfterHide)
-            {
-                Destroy(popup.gameObject);
-            }
-            else
-            {
-                _inactivePopups.Add(popup);
-            }
         }
 
         public void HideAllPopups()
@@ -222,17 +231,73 @@ namespace N2K
             _activePopups.Clear();
         }
 
-        public void HideAllPopupsOfType(PopupType type)
+        public void HideAllPopups<T>() where T : PopupBase
         {
             for (int i = _activePopups.Count - 1; i >= 0; i--)
             {
                 PopupBase popup = _activePopups[i];
-                if (popup.Type == type)
+                if (popup.GetType() == typeof(T))
                 {
-                    _activePopups.RemoveAt(i);
                     HidePopupInternal(popup);
                 }
             }
+        }
+
+        private void HidePopupInternal(PopupBase popup)
+        {
+            if (popup == null)
+            {
+                return;
+            }
+            _activePopups.Remove(popup);
+            popup.OnHide(() =>
+            {
+                onPopupHidden?.Invoke(popup);
+                if (popup.DestroyAfterHide)
+                {
+                    Destroy(popup.gameObject);
+                }
+                else
+                {
+                    _inactivePopups.Add(popup);
+                }
+            });
+        }
+
+        // GETTERS
+
+        public int GetActivePopupCount<T>() where T : PopupBase
+        {
+            int count = 0;
+            foreach (var popup in _activePopups)
+            {
+                if (popup.GetType() == typeof(T))
+                    count++;
+            }
+            return count;
+        }
+
+        public List<PopupBase> GetAllActivePopups<T>()
+        {
+            List<PopupBase> result = new List<PopupBase>();
+            foreach (var popup in _activePopups)
+            {
+                if (popup.GetType() == typeof(T))
+                    result.Add(popup);
+            }
+            return result;
+        }
+
+        public bool HasPopup<T>() where T : PopupBase
+        {
+            foreach (var popup in _activePopups)
+            {
+                if (popup.GetType() == typeof(T))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         #endregion ___
     }

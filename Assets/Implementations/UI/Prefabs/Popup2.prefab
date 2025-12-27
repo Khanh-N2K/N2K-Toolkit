@@ -91,6 +91,7 @@ GameObject:
   - component: {fileID: 2888122350422777878}
   - component: {fileID: 2396688791908959708}
   - component: {fileID: 262031875721751720}
+  - component: {fileID: 2159400123981991254}
   m_Layer: 5
   m_Name: Popup2
   m_TagString: Untagged
@@ -168,10 +169,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75512f2c49759af44995daaebd0046e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCapacity: 1
-  maxSize: 1
-  _type: 1
+  _onHideAnim: {fileID: 0}
+  _destroyAfterHide: 0
   closeBtn: {fileID: 1412971874067509133}
+--- !u!111 &2159400123981991254
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2582644081843791379}
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Animation: {fileID: 7400000, guid: 9eed5baf70a703c4a86718b28edc1743, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: 9eed5baf70a703c4a86718b28edc1743, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_UpdateMode: 0
+  m_CullingType: 0
 --- !u!1 &5129745515784915261
 GameObject:
   m_ObjectHideFlags: 0

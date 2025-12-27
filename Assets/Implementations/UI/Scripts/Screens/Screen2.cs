@@ -18,8 +18,8 @@ namespace UI_Example
         {
             base.Initialize();
 
-            _goToScreen1Btn.onClick.AddListener(() => UIManager.Instance.ShowScreen(ScreenType.Screen1));
-            _openPopup1Btn.onClick.AddListener(() => UIManager.Instance.ShowPopup(PopupType.Popup1));
+            _goToScreen1Btn.onClick.AddListener(() => UIManager.Instance.ShowScreen<Screen1>());
+            _openPopup1Btn.onClick.AddListener(() => UIManager.Instance.ShowPopup<Popup1>());
         }
     }
 }

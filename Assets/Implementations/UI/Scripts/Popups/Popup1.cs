@@ -19,7 +19,7 @@ namespace UI_Example
             base.Initialize();
 
             closeBtn.onClick.AddListener(() => UIManager.Instance.HidePopup(this));
-            openPopup2Btn.onClick.AddListener(() => UIManager.Instance.ShowPopup(PopupType.Popup2));
+            openPopup2Btn.onClick.AddListener(() => UIManager.Instance.ShowPopup<Popup2>());
         }
     }
 }

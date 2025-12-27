@@ -9,7 +9,7 @@ namespace UI_Example
 
         private void Start()
         {
-            _uiManager.ShowScreen(ScreenType.Screen1);
+            _uiManager.ShowScreen<Screen1>();
         }
     }
 }

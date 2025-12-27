@@ -6,16 +6,33 @@ namespace N2K
     {
         public static T Instance { get; private set; }
 
-        protected virtual void Awake()
+        protected abstract bool IsDontDestroyOnLoad { get; }
+
+        private void Awake()
         {
-            if (Instance != null)
+            if (Instance != null && Instance != this)
             {
-                Debug.LogError($"There's more than 1 instance of {typeof(T)} existed!");
+                Debug.LogWarning($"Duplicate singleton detected: {typeof(T).Name}. Destroying {name}");
                 Destroy(gameObject);
             }
             else
             {
                 Instance = (T)this;
+                if (IsDontDestroyOnLoad)
+                {
+                    DontDestroyOnLoad(gameObject);
+                }
+                OnSingletonAwake();
+            }
+        }
+
+        protected abstract void OnSingletonAwake();
+
+        protected virtual void OnDestroy()
+        {
+            if(Instance == this)
+            {
+                Instance = null;
             }
         }
     }
