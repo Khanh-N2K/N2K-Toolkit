@@ -2,43 +2,46 @@
 using UnityEditor;
 using UnityEngine;
 
-public static class CreateEmptyParentAtChildPos
+namespace N2K
 {
-    [MenuItem("GameObject/Create Empty Parent (At Child Pos)", false, 0)]
-    static void CreateParentAtChildPosition()
+    public static class CreateEmptyParentAtChildPos
     {
-        if (Selection.transforms.Length == 0)
-            return;
-        Transform[] selection = Selection.transforms;
-
-        // Calculate average world position
-        Vector3 center = Vector3.zero;
-        foreach (var t in selection)
-            center += t.position;
-        center /= selection.Length;
-
-        // Create parent
-        GameObject parent = new GameObject("Empty Parent");
-        Undo.RegisterCreatedObjectUndo(parent, "Create Empty Parent");
-        parent.transform.position = center;
-        parent.transform.rotation = Quaternion.identity;
-        parent.transform.localScale = Vector3.one;
-
-        // Preserve hierarchy level
-        parent.transform.SetParent(selection[0].parent, true);
-
-        // Re-parent selected objects
-        foreach (var t in selection)
+        [MenuItem("GameObject/Create Empty Parent (At Child Pos)", false, 0)]
+        static void CreateParentAtChildPosition()
         {
-            Undo.SetTransformParent(t, parent.transform, "Reparent To Empty");
-        }
-        Selection.activeGameObject = parent;
-    }
+            if (Selection.transforms.Length == 0)
+                return;
+            Transform[] selection = Selection.transforms;
 
-    [MenuItem("GameObject/Create Empty Parent (At Child Pos)", true)]
-    static bool ValidateCreateParent()
-    {
-        return Selection.transforms.Length > 0;
+            // Calculate average world position
+            Vector3 center = Vector3.zero;
+            foreach (var t in selection)
+                center += t.position;
+            center /= selection.Length;
+
+            // Create parent
+            GameObject parent = new GameObject("Empty Parent");
+            Undo.RegisterCreatedObjectUndo(parent, "Create Empty Parent");
+            parent.transform.position = center;
+            parent.transform.rotation = Quaternion.identity;
+            parent.transform.localScale = Vector3.one;
+
+            // Preserve hierarchy level
+            parent.transform.SetParent(selection[0].parent, true);
+
+            // Re-parent selected objects
+            foreach (var t in selection)
+            {
+                Undo.SetTransformParent(t, parent.transform, "Reparent To Empty");
+            }
+            Selection.activeGameObject = parent;
+        }
+
+        [MenuItem("GameObject/Create Empty Parent (At Child Pos)", true)]
+        static bool ValidateCreateParent()
+        {
+            return Selection.transforms.Length > 0;
+        }
     }
 }
 #endif
