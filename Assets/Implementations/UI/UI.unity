@@ -544,14 +544,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4525ea8bc08eb8c4393ef5ececcc6639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _canvas: {fileID: 0}
   _screenHolder: {fileID: 265813246}
   _popupHolder: {fileID: 419774979}
-  _screenPrefabs:
-  - {fileID: 3542963550366213531, guid: 71c13efa59c5d82459961ced3b8dc47e, type: 3}
-  - {fileID: 5278112500530021440, guid: b0f9d845314940d47a2b7b3377c55f58, type: 3}
-  _popupPrefabs:
-  - {fileID: 6990347294131727702, guid: 86d39d17bb9112343a90e56811cf236d, type: 3}
-  - {fileID: 262031875721751720, guid: e8c0fe6d7568e6945a15e714f46e8e26, type: 3}
+  _preloadScreens: []
+  _preloadPopups: []
+  _screenPrefabFolder: {fileID: 102900000, guid: 137d395e486a46e4f850bdf1246e80b6, type: 3}
+  _popupPrefabFolder: {fileID: 102900000, guid: 615d0d737d472f9478d0518517355d79, type: 3}
 --- !u!1 &1891625257
 GameObject:
   m_ObjectHideFlags: 0

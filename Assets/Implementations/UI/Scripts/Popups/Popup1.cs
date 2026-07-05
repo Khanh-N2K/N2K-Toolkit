@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UI_Example
 {
-    public class Popup1 : PopupBase
+    public class Popup1 : Base_Popup
     {
         [Header("=== POPUP1 ===")]
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UI_Example
 {
-    public class Screen1 : ScreenBase
+    public class Screen1 : Base_Screen
     {
         [Header("=== SCREEN1 ===")]
 
