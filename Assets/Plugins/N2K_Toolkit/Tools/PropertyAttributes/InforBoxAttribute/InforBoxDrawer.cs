@@ -36,15 +36,15 @@ namespace N2K
             return helpBoxHeight + propertyHeight + 4f;
         }
 
-        private static UnityEditor.MessageType ConvertType(MessageType type)
+        private static UnityEditor.MessageType ConvertType(InforBoxMessageType type)
         {
             switch (type)
             {
                 default:
-                case MessageType.None: return UnityEditor.MessageType.None;
-                case MessageType.Info: return UnityEditor.MessageType.Info;
-                case MessageType.Warning: return UnityEditor.MessageType.Warning;
-                case MessageType.Error: return UnityEditor.MessageType.Error;
+                case InforBoxMessageType.None: return UnityEditor.MessageType.None;
+                case InforBoxMessageType.Info: return UnityEditor.MessageType.Info;
+                case InforBoxMessageType.Warning: return UnityEditor.MessageType.Warning;
+                case InforBoxMessageType.Error: return UnityEditor.MessageType.Error;
             }
         }
     }

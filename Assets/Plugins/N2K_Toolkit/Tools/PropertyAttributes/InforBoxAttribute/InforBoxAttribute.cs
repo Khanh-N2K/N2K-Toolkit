@@ -5,16 +5,16 @@ namespace N2K
     public class InfoBoxAttribute : PropertyAttribute
     {
         public readonly string message;
-        public readonly MessageType type;
+        public readonly InforBoxMessageType type;
 
-        public InfoBoxAttribute(string message, MessageType type = MessageType.Warning)
+        public InfoBoxAttribute(string message, InforBoxMessageType type = InforBoxMessageType.Warning)
         {
             this.message = message;
             this.type = type;
         }
     }
 
-    public enum MessageType
+    public enum InforBoxMessageType
     {
         None,
         Info,

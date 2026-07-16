@@ -5,30 +5,14 @@ namespace N2K
 {
     public abstract class PoolMember : MonoBehaviour
     {
-        [Header("=== POOL MEMBER ===")]
-
-
-        #region ___ SETTINGS ___
-        [Header("Settings")]
+        private ObjectPool<PoolMember> pool;
+        public ObjectPool<PoolMember> Pool => pool;
 
         protected abstract int defaultCapacity { get; }
-
-        protected abstract int maxSize { get; }
-
         public int DefaultCapacity => defaultCapacity;
 
+        protected abstract int maxSize { get; }
         public int MaxSize => maxSize;
-        #endregion ___
-
-
-        #region ___ DATA ___
-        [Header("Data")]
-
-        private ObjectPool<PoolMember> pool;
-
-        public ObjectPool<PoolMember> Pool => pool;
-        #endregion ___ DATA ___
-
 
         internal virtual void SetPool(ObjectPool<PoolMember> pool)
         {

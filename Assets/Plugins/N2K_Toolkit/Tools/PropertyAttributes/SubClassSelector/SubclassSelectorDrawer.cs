@@ -105,7 +105,7 @@ namespace N2K
             EditorGUI.HelpBox(
                 position,
                 "[SubclassSelector] only works with [SerializeReference]. For Unity Object fields, use [SerializeField] instead.",
-                (UnityEditor.MessageType)MessageType.Warning);
+                MessageType.Warning);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
