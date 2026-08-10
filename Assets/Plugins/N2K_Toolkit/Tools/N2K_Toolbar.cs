@@ -26,7 +26,7 @@ namespace N2K
 
         public override Vector2 GetWindowSize()
         {
-            return new Vector2(250, 120);
+            return new Vector2(250, 120); // Initial size, will be dynamically auto-adjusted in OnGUI
         }
 
         public override void OnGUI(Rect rect)
@@ -45,14 +45,28 @@ namespace N2K
                 editorWindow.Close();
             });
 
-            GUILayout.Space(Padding);
-            DrawTitle("Source Code Metrics");
+            DrawTitleButton("Pinned Assets", true, () =>
+            {
+                PinnedAssetsWindow.ShowWindow();
+                editorWindow.Close();
+            });
 
-            DrawLargeButton("Open Metric Window", true, () =>
+            DrawTitleButton("Source Code Metrics", true, () =>
             {
                 SourceCodeMetricWindow.ShowWindow();
                 editorWindow.Close();
             });
+
+            // Dynamically auto-adjust window height based on GUI elements size
+            if (editorWindow != null && Event.current.type == EventType.Repaint)
+            {
+                float calculatedHeight = GUILayoutUtility.GetLastRect().yMax + Padding;
+                if (Mathf.Abs(editorWindow.position.height - calculatedHeight) > 2f)
+                {
+                    editorWindow.minSize = new Vector2(250, calculatedHeight);
+                    editorWindow.maxSize = new Vector2(250, calculatedHeight);
+                }
+            }
         }
 
         private static void DrawTitle(string text)
@@ -72,6 +86,30 @@ namespace N2K
                 );
 
                 if (GUI.Button(buttonRect, text, EditorStyles.toolbarButton))
+                {
+                    onClick?.Invoke();
+                }
+            }
+        }
+
+        private static GUIStyle titleButtonStyle;
+
+        private static void DrawTitleButton(string text, bool enabled, System.Action onClick)
+        {
+            using (new EditorGUI.DisabledScope(!enabled))
+            {
+                if (titleButtonStyle == null)
+                {
+                    titleButtonStyle = new GUIStyle(EditorStyles.boldLabel);
+                    titleButtonStyle.hover.textColor = EditorGUIUtility.isProSkin 
+                        ? new Color(0.3f, 0.67f, 0.98f) 
+                        : new Color(0.0f, 0.47f, 0.83f);
+                    titleButtonStyle.active.textColor = EditorGUIUtility.isProSkin
+                        ? new Color(0.18f, 0.53f, 0.88f)
+                        : new Color(0.0f, 0.33f, 0.63f);
+                }
+
+                if (GUILayout.Button(text, titleButtonStyle))
                 {
                     onClick?.Invoke();
                 }
