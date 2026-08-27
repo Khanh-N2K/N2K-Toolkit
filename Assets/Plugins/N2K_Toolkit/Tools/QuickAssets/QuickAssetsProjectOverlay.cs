@@ -8,7 +8,7 @@ namespace N2K
     [InitializeOnLoad]
     internal static class QuickAssetsProjectOverlay
     {
-        private const string PREFS_KEY = "UserQuickAssets_UIToolkit_GUIDs";
+        private static string PREFS_KEY => "UserQuickAssets_" + Application.dataPath.Replace('/', '_').Replace(':', '_');
         private static double lastUpdateTime;
 
         static QuickAssetsProjectOverlay()

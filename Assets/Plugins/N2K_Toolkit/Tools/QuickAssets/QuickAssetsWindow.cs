@@ -10,9 +10,9 @@ namespace N2K
 {
     internal class QuickAssetsWindow : EditorWindow
     {
-        private const string PREFS_KEY = "UserQuickAssets_UIToolkit_GUIDs";
-        private const string PREFS_MODE_KEY = "UserQuickAssets_ViewMode"; // Saves your toggle choice
-        private const string PREFS_GROUP_ORDER_KEY = "UserQuickAssets_GroupOrder"; // Saves group order
+        private static string PREFS_KEY => "UserQuickAssets_" + Application.dataPath.Replace('/', '_').Replace(':', '_');
+        private static string PREFS_MODE_KEY => "UserQuickAssets_ViewMode_" + Application.dataPath.Replace('/', '_').Replace(':', '_');
+        private static string PREFS_GROUP_ORDER_KEY => "UserQuickAssets_GroupOrder_" + Application.dataPath.Replace('/', '_').Replace(':', '_');
 
         private static List<string> quickGUIDs = new List<string>();
         private List<string> groupOrder = new List<string>();
