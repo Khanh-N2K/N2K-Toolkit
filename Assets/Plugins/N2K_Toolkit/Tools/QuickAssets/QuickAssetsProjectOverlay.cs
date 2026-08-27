@@ -6,14 +6,14 @@ using UnityEngine;
 namespace N2K
 {
     [InitializeOnLoad]
-    internal static class PinnedAssetsProjectOverlay
+    internal static class QuickAssetsProjectOverlay
     {
-        private const string PREFS_KEY = "UserPinnedAssets_UIToolkit_GUIDs";
+        private const string PREFS_KEY = "UserQuickAssets_UIToolkit_GUIDs";
         private static double lastUpdateTime;
 
-        static PinnedAssetsProjectOverlay()
+        static QuickAssetsProjectOverlay()
         {
-            EditorApplication.projectWindowItemOnGUI += DrawPinIcon;
+            EditorApplication.projectWindowItemOnGUI += DrawQuickIcon;
             EditorApplication.update += UpdateRepaint;
         }
 
@@ -39,7 +39,7 @@ namespace N2K
             }
         }
 
-        private static void DrawPinIcon(string guid, Rect selectionRect)
+        private static void DrawQuickIcon(string guid, Rect selectionRect)
         {
             if (string.IsNullOrEmpty(guid)) return;
 
@@ -52,51 +52,51 @@ namespace N2K
                 }
             }
 
-            var pinned = PinnedAssetsWindow.GetPinnedGUIDs();
-            bool isPinned = pinned.Contains(guid);
+            var quickAssets = QuickAssetsWindow.GetquickGUIDs();
+            bool isQuick = quickAssets.Contains(guid);
 
             bool isHovered = selectionRect.Contains(Event.current.mousePosition);
-            if (!isPinned && !isHovered) return;
+            if (!isQuick && !isHovered) return;
 
             string path = AssetDatabase.GUIDToAssetPath(guid);
             if (string.IsNullOrEmpty(path)) return;
 
             float buttonSize = 16f;
-            Rect pinRect;
+            Rect quickRect;
 
             if (selectionRect.height > 20f)
             {
                 // Grid view (large thumbnails)
-                pinRect = new Rect(selectionRect.xMax - buttonSize - 4f, selectionRect.y + 4f, buttonSize, buttonSize);
+                quickRect = new Rect(selectionRect.xMax - buttonSize - 4f, selectionRect.y + 4f, buttonSize, buttonSize);
             }
             else
             {
                 // List view (single row)
-                pinRect = new Rect(selectionRect.xMax - buttonSize - 8f, selectionRect.y + (selectionRect.height - buttonSize) / 2f, buttonSize, buttonSize);
+                quickRect = new Rect(selectionRect.xMax - buttonSize - 8f, selectionRect.y + (selectionRect.height - buttonSize) / 2f, buttonSize, buttonSize);
             }
 
-            // Draw a solid star character (★) if pinned, or outline star character (☆) if unpinned
-            string starChar = isPinned ? "★" : "☆";
+            // Draw a solid star character (★) if in quick assets, or outline star character (☆) if not in quick assets
+            string starChar = isQuick ? "★" : "☆";
 
             GUIStyle buttonStyle = new GUIStyle(GUIStyle.none);
             buttonStyle.normal.textColor = Color.white;
             buttonStyle.alignment = TextAnchor.MiddleCenter;
             buttonStyle.fontSize = 14;
 
-            if (GUI.Button(pinRect, starChar, buttonStyle))
+            if (GUI.Button(quickRect, starChar, buttonStyle))
             {
-                if (isPinned)
+                if (isQuick)
                 {
-                    pinned.Remove(guid);
+                    quickAssets.Remove(guid);
                 }
                 else
                 {
-                    pinned.Add(guid);
+                    quickAssets.Add(guid);
                 }
 
-                EditorPrefs.SetString(PREFS_KEY, string.Join(",", pinned));
+                EditorPrefs.SetString(PREFS_KEY, string.Join(",", quickAssets));
 
-                var windows = Resources.FindObjectsOfTypeAll<PinnedAssetsWindow>();
+                var windows = Resources.FindObjectsOfTypeAll<QuickAssetsWindow>();
                 if (windows != null && windows.Length > 0)
                 {
                     foreach (var window in windows)

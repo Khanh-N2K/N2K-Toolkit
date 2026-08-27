@@ -8,26 +8,26 @@ using UnityEngine.UIElements;
 
 namespace N2K
 {
-    internal class PinnedAssetsWindow : EditorWindow
+    internal class QuickAssetsWindow : EditorWindow
     {
-        private const string PREFS_KEY = "UserPinnedAssets_UIToolkit_GUIDs";
-        private const string PREFS_MODE_KEY = "UserPinnedAssets_ViewMode"; // Saves your toggle choice
-        private const string PREFS_GROUP_ORDER_KEY = "UserPinnedAssets_GroupOrder"; // Saves group order
+        private const string PREFS_KEY = "UserQuickAssets_UIToolkit_GUIDs";
+        private const string PREFS_MODE_KEY = "UserQuickAssets_ViewMode"; // Saves your toggle choice
+        private const string PREFS_GROUP_ORDER_KEY = "UserQuickAssets_GroupOrder"; // Saves group order
 
-        private static List<string> pinnedGUIDs = new List<string>();
+        private static List<string> quickGUIDs = new List<string>();
         private List<string> groupOrder = new List<string>();
         private Dictionary<string, List<Object>> groupedAssets = new Dictionary<string, List<Object>>();
 
-        internal static List<string> GetPinnedGUIDs()
+        internal static List<string> GetquickGUIDs()
         {
-            if (pinnedGUIDs == null || (pinnedGUIDs.Count == 0 && EditorPrefs.HasKey(PREFS_KEY)))
+            if (quickGUIDs == null || (quickGUIDs.Count == 0 && EditorPrefs.HasKey(PREFS_KEY)))
             {
                 string data = EditorPrefs.GetString(PREFS_KEY, "");
-                pinnedGUIDs = string.IsNullOrEmpty(data) 
+                quickGUIDs = string.IsNullOrEmpty(data) 
                     ? new List<string>() 
                     : data.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
             }
-            return pinnedGUIDs;
+            return quickGUIDs;
         }
 
         private ScrollView mainScroll;
@@ -37,10 +37,10 @@ namespace N2K
 
         private bool isGridView = false; // Tracks current display mode
 
-        [MenuItem("Tools/N2K Toolkit/Pinned Assets %#q")]
+        [MenuItem("Tools/N2K Toolkit/Quick Assets %q")]
         internal static void ShowWindow()
         {
-            PinnedAssetsWindow window = GetWindow<PinnedAssetsWindow>("Pinned Assets");
+            QuickAssetsWindow window = GetWindow<QuickAssetsWindow>("Quick Assets");
             window.minSize = new Vector2(300, 400);
             window.position = new Rect(100, 100, 800, 600);
             window.Show();
@@ -92,7 +92,7 @@ namespace N2K
             // Group drag-and-drop callbacks for stable coordinate-based reordering
             mainScroll.contentContainer.RegisterCallback<DragUpdatedEvent>(e =>
             {
-                string draggedGroup = DragAndDrop.GetGenericData("ReorderPinnedGroup") as string;
+                string draggedGroup = DragAndDrop.GetGenericData("ReorderQuickGroup") as string;
                 if (draggedGroup != null)
                 {
                     DragAndDrop.visualMode = DragAndDropVisualMode.Move;
@@ -140,7 +140,7 @@ namespace N2K
 
             mainScroll.contentContainer.RegisterCallback<DragPerformEvent>(e =>
             {
-                string draggedGroup = DragAndDrop.GetGenericData("ReorderPinnedGroup") as string;
+                string draggedGroup = DragAndDrop.GetGenericData("ReorderQuickGroup") as string;
                 if (draggedGroup != null)
                 {
                     DragAndDrop.AcceptDrag();
@@ -197,14 +197,14 @@ namespace N2K
             // Update the Clear All button's enabled state
             if (clearAllBtn != null)
             {
-                clearAllBtn.SetEnabled(pinnedGUIDs.Count > 0);
+                clearAllBtn.SetEnabled(quickGUIDs.Count > 0);
             }
 
             // Update the button text to reflect the current mode
             toggleModeBtn.text = isGridView ? "⊞ Grid View" : "≣ List View";
 
             // --- EMPTY STATE ---
-            if (pinnedGUIDs.Count == 0)
+            if (quickGUIDs.Count == 0)
             {
                 VisualElement emptyContainer = new VisualElement();
                 emptyContainer.style.flexGrow = 1;
@@ -256,7 +256,7 @@ namespace N2K
                     if (e.button == 0)
                     {
                         DragAndDrop.PrepareStartDrag();
-                        DragAndDrop.SetGenericData("ReorderPinnedGroup", group.Key);
+                        DragAndDrop.SetGenericData("ReorderQuickGroup", group.Key);
                         DragAndDrop.StartDrag("Reorder Group");
                         e.StopPropagation();
                     }
@@ -309,7 +309,7 @@ namespace N2K
                 // Register drag callbacks on groupContent for coordinate-based asset reordering
                 groupContent.RegisterCallback<DragUpdatedEvent>(e =>
                 {
-                    Object draggedObj = DragAndDrop.GetGenericData("ReorderPinnedAsset") as Object;
+                    Object draggedObj = DragAndDrop.GetGenericData("ReorderQuickAsset") as Object;
                     if (draggedObj != null)
                     {
                         // Check if the dragged object belongs to this group type
@@ -327,7 +327,7 @@ namespace N2K
                             if (!string.IsNullOrEmpty(draggedPath))
                             {
                                 string draggedGuid = AssetDatabase.AssetPathToGUID(draggedPath);
-                                int draggedIndex = pinnedGUIDs.IndexOf(draggedGuid);
+                                int draggedIndex = quickGUIDs.IndexOf(draggedGuid);
 
                                 if (draggedIndex >= 0)
                                 {
@@ -355,12 +355,12 @@ namespace N2K
                                         {
                                             string targetPath = AssetDatabase.GetAssetPath(targetObj);
                                             string targetGuid = AssetDatabase.AssetPathToGUID(targetPath);
-                                            int targetIndex = pinnedGUIDs.IndexOf(targetGuid);
+                                            int targetIndex = quickGUIDs.IndexOf(targetGuid);
 
                                             if (targetIndex >= 0 && draggedIndex != targetIndex)
                                             {
-                                                pinnedGUIDs.RemoveAt(draggedIndex);
-                                                pinnedGUIDs.Insert(targetIndex, draggedGuid);
+                                                quickGUIDs.RemoveAt(draggedIndex);
+                                                quickGUIDs.Insert(targetIndex, draggedGuid);
 
                                                 SaveData();
                                                 RefreshUI();
@@ -376,7 +376,7 @@ namespace N2K
 
                 groupContent.RegisterCallback<DragPerformEvent>(e =>
                 {
-                    Object draggedObj = DragAndDrop.GetGenericData("ReorderPinnedAsset") as Object;
+                    Object draggedObj = DragAndDrop.GetGenericData("ReorderQuickAsset") as Object;
                     if (draggedObj != null)
                     {
                         DragAndDrop.AcceptDrag();
@@ -413,7 +413,7 @@ namespace N2K
                 {
                     DragAndDrop.PrepareStartDrag();
                     DragAndDrop.objectReferences = new Object[] { obj };
-                    DragAndDrop.SetGenericData("ReorderPinnedAsset", obj);
+                    DragAndDrop.SetGenericData("ReorderQuickAsset", obj);
                     DragAndDrop.StartDrag("Reorder Asset");
 
                     Selection.activeObject = obj;
@@ -514,8 +514,8 @@ namespace N2K
         {
             root.RegisterCallback<DragUpdatedEvent>(e =>
             {
-                bool isInternalDrag = DragAndDrop.GetGenericData("ReorderPinnedAsset") != null || 
-                                      DragAndDrop.GetGenericData("ReorderPinnedGroup") != null;
+                bool isInternalDrag = DragAndDrop.GetGenericData("ReorderQuickAsset") != null || 
+                                      DragAndDrop.GetGenericData("ReorderQuickGroup") != null;
 
                 if (isInternalDrag)
                 {
@@ -537,8 +537,8 @@ namespace N2K
             {
                 dragOverlay.style.display = DisplayStyle.None;
                 
-                bool isInternalDrag = DragAndDrop.GetGenericData("ReorderPinnedAsset") != null ||
-                                      DragAndDrop.GetGenericData("ReorderPinnedGroup") != null;
+                bool isInternalDrag = DragAndDrop.GetGenericData("ReorderQuickAsset") != null ||
+                                      DragAndDrop.GetGenericData("ReorderQuickGroup") != null;
                 if (!isInternalDrag)
                 {
                     DragAndDrop.AcceptDrag();
@@ -550,9 +550,9 @@ namespace N2K
                         if (!string.IsNullOrEmpty(path))
                         {
                             string guid = AssetDatabase.AssetPathToGUID(path);
-                            if (!pinnedGUIDs.Contains(guid))
+                            if (!quickGUIDs.Contains(guid))
                             {
-                                pinnedGUIDs.Add(guid);
+                                quickGUIDs.Add(guid);
                                 changed = true;
                             }
                         }
@@ -573,9 +573,9 @@ namespace N2K
             string path = AssetDatabase.GetAssetPath(obj);
             string guid = AssetDatabase.AssetPathToGUID(path);
 
-            if (pinnedGUIDs.Contains(guid))
+            if (quickGUIDs.Contains(guid))
             {
-                pinnedGUIDs.Remove(guid);
+                quickGUIDs.Remove(guid);
                 SaveData();
                 RefreshUI();
             }
@@ -583,11 +583,11 @@ namespace N2K
 
         private void LoadData()
         {
-            pinnedGUIDs.Clear();
+            quickGUIDs.Clear();
             string data = EditorPrefs.GetString(PREFS_KEY, "");
             if (!string.IsNullOrEmpty(data))
             {
-                pinnedGUIDs = data.Split(',').ToList();
+                quickGUIDs = data.Split(',').ToList();
             }
 
             groupOrder.Clear();
@@ -602,7 +602,7 @@ namespace N2K
 
         private void SaveData()
         {
-            EditorPrefs.SetString(PREFS_KEY, string.Join(",", pinnedGUIDs));
+            EditorPrefs.SetString(PREFS_KEY, string.Join(",", quickGUIDs));
             EditorPrefs.SetString(PREFS_GROUP_ORDER_KEY, string.Join(",", groupOrder));
             RefreshCache();
         }
@@ -612,7 +612,7 @@ namespace N2K
             groupedAssets.Clear();
             List<string> guidsToRemove = new List<string>();
 
-            foreach (string guid in pinnedGUIDs)
+            foreach (string guid in quickGUIDs)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(path);
@@ -656,20 +656,20 @@ namespace N2K
 
             if (guidsToRemove.Count > 0)
             {
-                foreach (string guid in guidsToRemove) pinnedGUIDs.Remove(guid);
+                foreach (string guid in guidsToRemove) quickGUIDs.Remove(guid);
                 orderChanged = true;
             }
 
             if (orderChanged)
             {
-                EditorPrefs.SetString(PREFS_KEY, string.Join(",", pinnedGUIDs));
+                EditorPrefs.SetString(PREFS_KEY, string.Join(",", quickGUIDs));
                 EditorPrefs.SetString(PREFS_GROUP_ORDER_KEY, string.Join(",", groupOrder));
             }
         }
 
         private void RemoveGroup(string groupName)
         {
-            if (EditorUtility.DisplayDialog($"Clear Group: {groupName}", $"Are you sure you want to unpin all assets in the {groupName} group?", "Yes", "No"))
+            if (EditorUtility.DisplayDialog($"Clear Group: {groupName}", $"Are you sure you want to remove all assets in the {groupName} group?", "Yes", "No"))
             {
                 if (groupedAssets.TryGetValue(groupName, out List<Object> assets))
                 {
@@ -684,7 +684,7 @@ namespace N2K
                         }
                     }
                     
-                    pinnedGUIDs.RemoveAll(guid => guidsToRemove.Contains(guid));
+                    quickGUIDs.RemoveAll(guid => guidsToRemove.Contains(guid));
                     SaveData();
                     RefreshUI();
                 }
@@ -693,9 +693,9 @@ namespace N2K
 
         private void ClearAll()
         {
-            if (EditorUtility.DisplayDialog("Clear All Pinned Assets", "Are you sure you want to unpin all assets?", "Yes", "No"))
+            if (EditorUtility.DisplayDialog("Clear All Quick Assets", "Are you sure you want to remove all assets?", "Yes", "No"))
             {
-                pinnedGUIDs.Clear();
+                quickGUIDs.Clear();
                 SaveData();
                 RefreshUI();
             }

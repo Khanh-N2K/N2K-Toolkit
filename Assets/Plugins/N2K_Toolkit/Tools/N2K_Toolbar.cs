@@ -45,9 +45,9 @@ namespace N2K
                 editorWindow.Close();
             });
 
-            DrawTitleButton("Pinned Assets", true, () =>
+            DrawTitleButton("Quick Assets", true, () =>
             {
-                PinnedAssetsWindow.ShowWindow();
+                QuickAssetsWindow.ShowWindow();
                 editorWindow.Close();
             });
 
