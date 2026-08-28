@@ -40,6 +40,12 @@ namespace N2K
         [MenuItem("Tools/N2K Toolkit/Quick Assets %q")]
         internal static void ShowWindow()
         {
+            if (HasOpenInstances<QuickAssetsWindow>())
+            {
+                GetWindow<QuickAssetsWindow>().Close();
+                return;
+            }
+
             QuickAssetsWindow window = GetWindow<QuickAssetsWindow>("Quick Assets");
             window.minSize = new Vector2(300, 400);
             window.position = new Rect(100, 100, 800, 600);
